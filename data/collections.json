@@ -1,0 +1,58 @@
+{
+  "info": {
+    "name": "GenAI QA Demo Collection",
+    "_postman_id": "genai-qa-demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET - Post (happy path)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "https://jsonplaceholder.typicode.com/posts/1"
+      }
+    },
+    {
+      "name": "POST - Create Post",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"title\": \"foo\", \"body\": \"bar\", \"userId\": 1 }"
+        },
+        "url": "https://jsonplaceholder.typicode.com/posts"
+      }
+    },
+    {
+      "name": "Auth - Bearer (httpbin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer DEMO_TOKEN" }
+        ],
+        "url": "https://httpbin.org/bearer"
+      }
+    },
+    {
+      "name": "Negative - 404 (httpbin)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "https://httpbin.org/status/404"
+      }
+    },
+    {
+      "name": "Negative - Bad Request (httpbin)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"bad\":\"data\"}" },
+        "url": "https://httpbin.org/status/400"
+      }
+    }
+  ]
+}

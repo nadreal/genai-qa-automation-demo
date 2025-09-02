@@ -1,5 +1,6 @@
 pytest
 pytest-html
+pytest-json-report
 playwright
 pytest-playwright
 selenium
@@ -8,4 +9,6 @@ great_expectations
 polars
 requests
 allure-pytest
+jsonschema
+responses
 

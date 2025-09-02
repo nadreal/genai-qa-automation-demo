@@ -22,11 +22,12 @@ jobs:
 
       - name: Run tests inside Docker
         run: |
-          mkdir -p reports
+          mkdir -p docs
           docker run --rm \
-            -v ${{ github.workspace }}/reports:/docs \
+            -v ${{ github.workspace }}/docs:/docs \
             web-automation-demo \
-            sh -c "pytest --html=/docs/report.html --self-contained-html"
+            sh -c "pytest -q --html=/docs/report.html --self-contained-html \
+            --json-report --jsson-report-file=docs/pytest-report.json"
 
       - name: Upload HTML report
         if: always()
@@ -34,3 +35,23 @@ jobs:
         with:
           name: pytest-report
           path: reports/report.html
+      # newman (if you want to run Postman collection in CI)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install newman
+        run: npm install -g newman newman-reporter-html
+      - name: Run Postman collection
+        run: |          
+          newman run postman/collection.json \
+            -r cli,json,html \
+            --reporter-json-export docs/postman-report.json \
+            --reporter-html-export docs/postman-report.html
+      - name: Upload newman report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-report
+          path: docs/
+

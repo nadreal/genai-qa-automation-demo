@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
+*.hypothesis/
 # Virtual environments
 venv/
 .env
