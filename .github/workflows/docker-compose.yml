@@ -1,49 +1,36 @@
-
 name: web-automation-demo
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         python-version: [3.13]
 
     steps:
-      # 1. Setup Repo
       - name: Checkout repo
         uses: actions/checkout@v4
-   
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      # 2. Build Docker image
       - name: Build Docker image
         run: docker build -t web-automation-demo .
 
-      # 3. Run tests inside Docker
-      - name: Run tests
+      - name: Run tests inside Docker
         run: |
+          mkdir -p reports
           docker run --rm \
-            -v ${{ github.workspace }}/reports:/app/docs \
-            web-automation-demo
+            -v ${{ github.workspace }}/reports:/docs \
+            web-automation-demo \
+            sh -c "pytest --html=/docs/report.html --self-contained-html"
 
-     # 4. Upload HTML report
       - name: Upload HTML report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pytest-report
           path: reports/report.html
-
-      - name: Run test-with-report
-        run: |
-          pytest --html=reports/report.html --self-contained-html
-    

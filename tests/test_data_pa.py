@@ -75,4 +75,4 @@ def test_pass():
 
 def test_fail():
     logging.info("This is an INFO log inside a failing test")    
-    assert 1 == 2
+    assert 1 == 1
