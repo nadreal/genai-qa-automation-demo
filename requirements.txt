@@ -1,0 +1,11 @@
+pytest
+pytest-html
+playwright
+pytest-playwright
+selenium
+hypothesis
+great_expectations
+polars
+requests
+allure-pytest
+
