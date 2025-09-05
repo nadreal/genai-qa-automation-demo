@@ -25,17 +25,33 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt /app/requirements.txt
+WORKDIR /app
 
 # Install Playwright and its dependencies
 RUN pip install --no-cache-dir playwright
+
 RUN playwright install
 RUN pip install --upgrade pip
 
+# System deps (adjust if GE/Polars need extra libs)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl git && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install other Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
+
+# If some libs break on 3.13, 3.11 wheels will install fine here
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+COPY . /app
+
+# Default command not needed—workflow uses `docker run ... sh -c "pytest ..."`
 # Copy the rest of the application code
 COPY . .
 
