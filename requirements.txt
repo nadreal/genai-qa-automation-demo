@@ -6,6 +6,7 @@ pytest-playwright
 selenium
 hypothesis
 great_expectations
+pandas
 polars
 requests
 allure-pytest
