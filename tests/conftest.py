@@ -1,7 +1,7 @@
 import pytest
 from pytest_html import extras
+from fixtures.browser import browser,page,pw
 import os
-
 
 @pytest.fixture(scope="session")
 def data_path():
@@ -9,6 +9,10 @@ def data_path():
     root_dir = os.path.dirname(root_dir)  # go up to project root
     return os.path.join(root_dir, "data")
 
+WEB_LOGIN = "https://www.saucedemo.com/"   
+API_LOGIN = "https://reqres.in/api"
+
+      
 # @pytest.hookimpl(hookwrapper=True)
 # def pytest_runtest_makereport(item, call):
 #     outcome = yield
