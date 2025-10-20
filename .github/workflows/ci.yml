@@ -21,16 +21,26 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build Docker image
-        run: docker build -t web-automation-demo .
+        run: docker build -t web-automation-demo .      
+      - run: python -m venv env && source env/bin/activate      
+      - run: pip install -r requirements.txt allure-pytest
 
       - name: Run tests inside Docker
-        run: |
+      - run: |
           mkdir -p docs
           docker run --rm \
             -v "${{ github.workspace }}/docs:/docs" \
             web-automation-demo \
-            sh -c "pytest --html=/docs/report.html --self-contained-html \
-            --json-report --json-report-file=/docs/pytest-report.json"     
+            sh -c "pytest --alluredir=allure-results \
+      - run: allure generate allure-results -o allure-report --clean
+      - run: allure open allure-report    
+        # run: |
+        #   mkdir -p docs
+        #   docker run --rm \
+        #     -v "${{ github.workspace }}/docs:/docs" \
+        #     web-automation-demo \
+        #     sh -c "pytest --html=/docs/report.html --self-contained-html \
+        #     --json-report --json-report-file=/docs/pytest-report.json"     
 
       - name: Upload HTML report
         if: always()
