@@ -21,9 +21,13 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build Docker image
-      - run: docker build -t web-automation-demo .      
-      - run: python -m venv env && source env/bin/activate      
-      - run: pip install -r requirements.txt allure-pytest
+        run: docker build -t web-automation-demo .      
+     
+      - name: Setup Python venv
+        run: python -m venv env && source env/bin/activate
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt allure-pytest
 
       - name: Run tests inside Docker
       - run: |
@@ -32,8 +36,8 @@ jobs:
             -v "${{ github.workspace }}/docs:/docs" \
             web-automation-demo \
             sh -c "pytest --alluredir=allure-results \
-      - run: allure generate allure-results -o allure-report --clean
-      - run: allure open allure-report    
+        run: allure generate allure-results -o allure-report --clean
+        run: allure open allure-report    
         # run: |
         #   mkdir -p docs
         #   docker run --rm \
@@ -55,11 +59,11 @@ jobs:
           node-version: '18'
 
       - name: Install newman
-      - run: npm install -g newman newman-reporter-html
+        run: npm install -g newman newman-reporter-html
 
       - name: Run Postman collection
         continue-on-error: true
-      - run: |
+        run: |
           mkdir -p docs
           if [ -f data/collection.json ]; then
             newman run data/collection.json \
