@@ -1,0 +1,1 @@
+INFO     root:test_data_pa.py:77 This is an INFO log inside a failing test

@@ -1,0 +1,3 @@
+INFO     root:test_data_pa.py:58 Step 1: Connected to DB
+INFO     root:test_data_pa.py:59 Step 2: Fetched 100 rows
+INFO     root:test_data_pa.py:60 Step 3: Validation passed ✅
