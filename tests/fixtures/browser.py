@@ -9,7 +9,7 @@ def pw():
         
 @pytest.fixture(scope='session')
 def browser(pw):
-    return pw.chromium.launch(headless=False)
+    return pw.chromium.launch(headless=True)
 
 @pytest.fixture(scope="function")
 def page(browser):

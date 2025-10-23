@@ -20,9 +20,9 @@ POST_SCHEMA = {
 def test_public_api_happy_path():
     """200 happy path and response schema validation"""
     url = "https://jsonplaceholder.typicode.com/posts/1"
-    r = requests.get(url, timeout=10)
-    assert r.status_code == 200, f"Expected 200, got {r.status_code}"
-    data = r.json()
+    response = requests.get(url, timeout=10)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
     # Validate schema (will raise jsonschema.ValidationError if invalid)
     validate(instance=data, schema=POST_SCHEMA)
     # spot-check field types
