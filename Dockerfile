@@ -26,10 +26,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements.txt && \        
     pip install --no-cache-dir playwright && \
     playwright install
-
+# Install Node.js (for Allure CLI)
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install Allure CLI globally
+RUN npm install -g allure-commandline --save-dev
 # Copy application code
 COPY . .
 
