@@ -17,13 +17,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Create venv
+      - name: Create venv (optional for host steps)
         run: python -m venv env && source env/bin/activate
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install pip dependencies (host; optional)
+        run: pip install -r requirements.txt || true
 
-      # Run tests inside Docker (do NOT generate Allure inside the container)
+      # Build your test Docker image from the repo's Dockerfile
+      - name: Build Docker image for tests
+        run: |
+          echo "Building Docker image 'web-automation-demo' from repository Dockerfile..."
+          docker build --pull -t web-automation-demo .
+
+      # Run tests inside the freshly-built container (write Allure results to mounted folder)
       - name: Run tests inside Docker
         continue-on-error: true
         run: |
@@ -34,18 +40,15 @@ jobs:
             web-automation-demo \
             sh -c "pytest --alluredir=/allure-results || true"
 
-      # Generate Allure report using a small Docker image that contains Allure CLI
+      # Generate Allure report using a small Docker image that has Allure CLI
       - name: Generate Allure report (using tobix/allure-cli)
         run: |
-          # create directories if missing
           mkdir -p allure-results allure-report
-          # If no results, skip generation but keep an empty index to avoid failing later
           if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results 2>/dev/null || true)" ]; then
             echo "No allure results found; creating placeholder report."
             mkdir -p allure-report
             echo "<!-- no allure results -->" > allure-report/index.html
           else
-            # Run the Allure CLI inside a small Docker image to generate the HTML report
             docker run --rm \
               -v "${{ github.workspace }}/allure-results:/results" \
               -v "${{ github.workspace }}/allure-report:/report" \
