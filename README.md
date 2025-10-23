@@ -76,8 +76,8 @@ graph TD;
 ## 📊 Reporting & Dashboard
 
 Pytest HTML reports generated on every run. [Download](https://github.com/nadreal/genai-automation-demo/actions/runs/17239640429/artifacts/3853647875)<br>
-[![Tests](https://github.com/nadreal/genai-qa-automation-demo/actions/workflows/web-automation-demo.yml/badge.svg)](https://github.com/nadreal/genai-qa-automation-demo/actions/workflows/web-automation-demo.yml)<br>
-[![Allure Report](https://img.shields.io/badge/Allure-Report-blue)](https://nadreal.github.io/genai-qa-automation-demo/)<br>
+
+Open Allure report [Test Report](https://nadreal.github.io/genai-qa-automation-demo/index.html) <br>
 HTML/JSON output ready for ingestion into Power BI or other dashboards. 📄 [View Test Report](https://nadreal.github.io/genai-automation-demo/report.html)<br>
 Future plans: Interactive QA dashboard to visualize pass/fail trends, API coverage, and flaky test detection.<br>
 
