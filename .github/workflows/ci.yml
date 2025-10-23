@@ -82,7 +82,6 @@ jobs:
       - name: Deploy Allure report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAGES_PAT }}
           publish_dir: ./allure-report
           publish_branch: gh-pages
-          # allow_empty_commit: true   # optional: uncomment to allow empty commits on first deploy
