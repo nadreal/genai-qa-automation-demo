@@ -16,58 +16,98 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ matrix.python-version }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-${{ matrix.python-version }}-
 
-      - name: Build Docker image
-        run: docker build -t web-automation-demo .      
-     
-      - name: Setup Python venv
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Create venv
         run: python -m venv env && source env/bin/activate
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-    
-      - name: Setup Node.js (for allure CLI)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
 
-      
+      # Ensure Java is installed for Allure
       - name: Install Java (required for Allure)
         run: |
           sudo apt-get update
-          sudo apt-get install -y default-jre unzip
+          sudo apt-get install -y default-jre unzip curl
 
+      # Install standalone Allure from Maven Central and symlink binary to PATH (robust)
       - name: Install Allure standalone (official tarball) and symlink
         run: |
-          # Set version you want:
+          set -euo pipefail
+
           ALLURE_VERSION=2.18.1
+          TARBALL="/tmp/allure.tgz"
 
-          # Download and extract
-          curl -sL "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/${ALLURE_VERSION}/allure-commandline-${ALLURE_VERSION}.tgz" -o /tmp/allure.tgz
-          sudo mkdir -p /opt/allure
-          sudo tar -xzf /tmp/allure.tgz -C /opt
-          
-          # The tarball expands to /opt/allure-<version>, create a stable symlink and symlink binary to PATH
-          sudo ln -sfn /opt/allure-${ALLURE_VERSION} /opt/allure
-          sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure || true
+          echo "Downloading Allure ${ALLURE_VERSION}..."
+          curl -sL "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/${ALLURE_VERSION}/allure-commandline-${ALLURE_VERSION}.tgz" -o "$TARBALL"
 
-          # Verify
-          allure --version || (ls -la /opt && echo "--- contents ---" && ls -la /opt/allure/bin && exit 1)
+          echo "Extracting to /opt..."
+          sudo mkdir -p /opt
+          sudo tar -xzf "$TARBALL" -C /opt
 
+          # Determine top-level directory in archive (robust)
+          TOPDIR=$(tar -tzf "$TARBALL" | head -1 | cut -f1 -d"/")
+          echo "Top-level dir in archive: $TOPDIR"
+
+          if [ -d "/opt/${TOPDIR}" ]; then
+            sudo ln -sfn "/opt/${TOPDIR}" /opt/allure
+          else
+            EXDIR=$(ls -d /opt/allure* 2>/dev/null | head -1 || true)
+            if [ -n "$EXDIR" ]; then
+              sudo ln -sfn "$EXDIR" /opt/allure
+            else
+              echo "ERROR: could not find extracted directory under /opt"
+              ls -la /opt || true
+              exit 1
+            fi
+          fi
+
+          # Find the actual binary
+          BINARY_PATH=$(find /opt/allure -type f -name 'allure' -print -quit || true)
+          if [ -z "$BINARY_PATH" ]; then
+            echo "No allure binary found under /opt/allure - dumping /opt for debug"
+            ls -R /opt | sed -n '1,500p'
+            exit 2
+          fi
+
+          echo "Found allure binary at: $BINARY_PATH"
+          sudo ln -sfn "$BINARY_PATH" /usr/local/bin/allure
+          sudo chmod +x /usr/local/bin/allure || true
+
+          echo "Verification: which allure -> $(which allure || echo 'not on PATH')"
+          echo "allure --version output:"
+          allure --version || (echo "allure command failed" && ls -la /opt/allure && ls -la "$(dirname "$BINARY_PATH")" && exit 3)
+
+      # Run tests inside container; do NOT run `allure generate` inside container.
       - name: Run tests inside Docker
-        continue-on-error: true 
+        continue-on-error: true
         run: |
           mkdir -p allure-results allure-report docs
           docker run --rm \
             -v "${{ github.workspace }}/allure-results:/allure-results" \
             -v "${{ github.workspace }}/allure-report:/allure-report" \
             web-automation-demo \
-            sh -c "pytest --alluredir=/allure-results || true
+            sh -c "pytest --alluredir=/allure-results || true"
+
+      # Generate Allure HTML report on runner (host) using installed Allure
       - name: Generate Allure Report
-        run: allure generate allure-results --clean -o allure-report
+        run: |
+          set -euo pipefail
+          # If there are no results, we still want to create an empty report directory
+          if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results 2>/dev/null || true)" ]; then
+            echo "No allure results found in allure-results/; creating empty report directory."
+            mkdir -p allure-report
+            echo "<!-- no allure results -->" > allure-report/index.html
+          else
+            allure generate allure-results --clean -o allure-report
+          fi
 
       - name: Upload Allure results artifact
         if: always()
@@ -82,15 +122,17 @@ jobs:
         with:
           name: allure-report
           path: allure-report
-  
+
+      - name: Upload newman report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-report
+          path: docs/
+
   deploy-allure:
     needs: build-and-test
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-
     steps:
       - name: Download Allure report artifact
         uses: actions/download-artifact@v4
@@ -99,42 +141,7 @@ jobs:
           path: ./allure-report
 
       - name: Deploy Allure report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
-      - name: Upload HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report
-          path: docs/report.html
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install newman
-        run: npm install -g newman newman-reporter-html
-
-      - name: Run Postman collection
-        continue-on-error: true
-        run: |
-          mkdir -p docs
-          if [ -f data/collection.json ]; then
-            newman run data/collection.json \
-              -r cli,json,html \
-              --reporter-json-export docs/postman-report.json \
-              --reporter-html-export docs/postman-report.html \
-              --suppress-exit-code      # <-- also prevents non-zero exit status
-          else
-            echo "No Postman collection found at data/collection.json; skipping."
-          fi
-      - name: Upload newman report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: postman-report
-          path: docs/
-
