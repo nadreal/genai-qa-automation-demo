@@ -29,7 +29,7 @@ This project demonstrates a **GenAI QA Automation Workflow** for modern web appl
 | API Testing       | Requests + Pytest                   |
 | Containerization  | Docker, Kubernets                   |
 | CI/CD             | GitHub Actions                      |
-| Reporting         | Pytest HTML & JSON, Power BI(opt.)  |
+| Reporting         | Pytest HTML & JSON                  |
 
 
 ## 🚀 Project Structure
@@ -44,17 +44,17 @@ This project demonstrates a **GenAI QA Automation Workflow** for modern web appl
 🧪 `tests/`
 ├── test_data_pa.py              # Automation tests Pandas/Polaris
 ├── test_great_expectations.py   # GenAI data validation testing
-├── test_hypothesis_demo         # GenAI proprety tests 
+├── test_hypothesis_demo         # GenAI property tests 
 └── conftest.py                  # Shared fixtures
 
 📊 `docs/report.html`    # Test reports (HTML/JSON)
 📄 `README.md`           # Project documentation
 ```
 
-## 🧪 Running Tests Localy
+## 🧪 Running Tests Locally
 ```bash
 pip install -r requirements.txt #install dependencies 
-python -m venv venv #create virutal envionment 
+python -m venv venv #create virtual environment 
 .\venv\Scripts\Activate.ps1  # Windows PowerShell
 pytest --html=docs/report.html --self-contained-html #Run test and generate reports
 ```
@@ -75,7 +75,7 @@ graph TD;
 
 ## 📊 Reporting & Dashboard
 
-Pytest HTML reports generated on every run. [Download](https://github.com/nadreal/genai-automation-demo/actions/runs/17239640429/artifacts/3853647875)<br>
+Pytest HTML reports are generated on every run. [Download](https://github.com/nadreal/genai-automation-demo/actions/runs/17239640429/artifacts/3853647875)<br>
 
 Open Allure report [Test Report](https://nadreal.github.io/genai-qa-automation-demo/index.html) <br>
 HTML/JSON output ready for ingestion into Power BI or other dashboards. 📄 [View Test Report](https://nadreal.github.io/genai-automation-demo/report.html)<br>
@@ -83,7 +83,7 @@ Future plans: Interactive QA dashboard to visualize pass/fail trends, API covera
 
 ## 👨‍🚀 Author
 
-Stevan Grubac [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/yourusername) <br>
+Stevan Grubac [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/stevangrubac/) <br>
 💻 Software Engineer | QA | DevOps<br>
 🧠 Focus: Automation, CI/CD, Scalable Testing, DevOps<br>
 
